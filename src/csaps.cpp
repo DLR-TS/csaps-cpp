@@ -160,7 +160,7 @@ UnivariateCubicSmoothingSpline::UnivariateCubicSmoothingSpline(const DoubleArray
   MakeSpline();
 }
 
-DoubleArray UnivariateCubicSmoothingSpline::operator()(const DoubleArray &xidata)
+std::tuple<DoubleArray,DoubleArray,DoubleArray,DoubleArray>  UnivariateCubicSmoothingSpline::operator()(const DoubleArray &xidata)
 {
   if (xidata.size() < 2) {
     throw std::runtime_error("There must be at least 2 data points");
@@ -169,7 +169,7 @@ DoubleArray UnivariateCubicSmoothingSpline::operator()(const DoubleArray &xidata
   return Evaluate(xidata);
 }
 
-DoubleArray UnivariateCubicSmoothingSpline::operator()(const Size pcount, DoubleArray &xidata)
+std::tuple<DoubleArray,DoubleArray,DoubleArray,DoubleArray>  UnivariateCubicSmoothingSpline::operator()(const Size pcount, DoubleArray &xidata)
 {
   if (pcount < 2) {
     throw std::runtime_error("There must be at least 2 data points");
@@ -286,7 +286,7 @@ void UnivariateCubicSmoothingSpline::MakeSpline()
   m_smooth = p;
 }
 
-DoubleArray UnivariateCubicSmoothingSpline::Evaluate(const DoubleArray & xidata)
+std::tuple<DoubleArray,DoubleArray,DoubleArray,DoubleArray> UnivariateCubicSmoothingSpline::Evaluate(const DoubleArray & xidata)
 {
   const Size x_size = m_xdata.size();
 
@@ -306,6 +306,9 @@ DoubleArray UnivariateCubicSmoothingSpline::Evaluate(const DoubleArray & xidata)
 
   DoubleArray xidata_loc(xi_size);
   DoubleArray yidata(xi_size);
+  DoubleArray dydata(xi_size);
+  DoubleArray ddydata(xi_size);
+  DoubleArray dddydata(xi_size);
 
   for (Index i = 0; i < xi_size; ++i) {
     Index index = indexes(i);
@@ -315,7 +318,15 @@ DoubleArray UnivariateCubicSmoothingSpline::Evaluate(const DoubleArray & xidata)
 
     // Initial values
     yidata(i) = m_coeffs(index, 0);
+
+    
   }
+
+  // yidata contains coefficient 1 (index 0)
+  dddydata = 6*yidata;
+  ddydata =  6*yidata;
+  dydata = 3*yidata;
+
 
   DoubleArray coeffs(xi_size);
 
@@ -323,11 +334,19 @@ DoubleArray UnivariateCubicSmoothingSpline::Evaluate(const DoubleArray & xidata)
     for (Index k = 0; k < xi_size; ++k) {
       coeffs(k) = m_coeffs(indexes(k), i);
     }
-
     yidata = xidata_loc * yidata + coeffs;
+    if (i == 1)  // coeff_2 is evaluated (index 1)
+    {
+      ddydata = xidata_loc * ddydata + 2 * coeffs;
+      dydata = xidata_loc * dydata + 2* coeffs;
+    }
+    if (i == 2) // coeff_3 is evaluated (index 2)
+    {
+      dydata = xidata_loc * dydata + coeffs;
+    }
   }
 
-  return yidata;
+  return {yidata,dydata,ddydata,dddydata};
 }
 
 } // namespace csaps
