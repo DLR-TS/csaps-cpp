@@ -26,13 +26,9 @@ all: build
 build: set_env
 	rm -rf ${ROOT_DIR}/build
 	docker build --network host --tag $(shell echo ${TAG} | tr A-Z a-z) --build-arg PROJECT=${PROJECT} .
-	mkdir -p "${ROOT_DIR}/tmp/${PROJECT}/build"
-	docker cp $$(docker create --rm $(shell echo ${TAG} | tr A-Z a-z)):/tmp/${PROJECT}/build tmp/${PROJECT}/build
-	cp -r "${ROOT_DIR}/tmp/${PROJECT}/build/build" "${ROOT_DIR}"
-	rm -rf ${ROOT_DIR}/tmp
+	docker cp $$(docker create --rm $(shell echo ${TAG} | tr A-Z a-z)):/tmp/${PROJECT}/build .
 
 clean: set_env
 	rm -rf "${ROOT_DIR}/build"
-	rm -rf "${ROOT_DIR}/tmp"
 	docker rm $$(docker ps -a -q --filter "ancestor=${TAG}") 2> /dev/null || true
 	docker rmi $$(docker images -q ${PROJECT}) 2> /dev/null || true

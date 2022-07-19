@@ -23,12 +23,16 @@ RUN mkdir -p /tmp/${PROJECT}/build
 WORKDIR /tmp/${PROJECT}/build
 RUN cmake .. && \
     cmake --build . --config Release --target install -- -j $(nproc) && \
+    cmake --install . && \
     DESTDIR=install make install && \
     cpack -G DEB && find . -type f -name "*.deb" | xargs mv -t .
 
-FROM alpine:3.14
+RUN mv CMakeCache.txt CMakeCache.txt.build
 
-ARG PROJECT
+#FROM alpine:3.14
 
-COPY --from=builder /tmp/${PROJECT}/build /tmp/${PROJECT}/build
+#ARG PROJECT
+
+#COPY --from=builder /tmp/${PROJECT}/build /tmp/${PROJECT}/build
+#COPY --from=builder /tmp/${PROJECT}/include /tmp/${PROJECT}/include
 
