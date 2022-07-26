@@ -1,6 +1,6 @@
 ARG PROJECT
 
-FROM ubuntu:20.04 as builder
+FROM ubuntu:20.04 as csaps-cpp_builder
 
 ARG PROJECT
 ARG REQUIREMENTS_FILE="requirements.${PROJECT}.ubuntu20.04.system"
@@ -32,6 +32,6 @@ FROM alpine:3.14
 
 ARG PROJECT
 
-COPY --from=builder /tmp/${PROJECT}/build /tmp/${PROJECT}/build
-COPY --from=builder /tmp/${PROJECT}/include /tmp/${PROJECT}/include
+COPY --from=csaps-cpp_builder /tmp/${PROJECT}/build /tmp/${PROJECT}/build
+COPY --from=csaps-cpp_builder /tmp/${PROJECT}/include /tmp/${PROJECT}/include
 
