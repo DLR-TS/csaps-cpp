@@ -4,7 +4,7 @@ SHELL:=/bin/bash
 
 .PHONY: build sent_env clean
 
-ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+ROOT_DIR:=$(shell dirname "$(realpath $(firstword $(MAKEFILE_LIST)))")
 MAKEFLAGS += --no-print-directory
 .EXPORT_ALL_VARIABLES:
 DOCKER_BUILDKIT?=1
@@ -23,8 +23,7 @@ set_env:
 
 all: build
 
-build: set_env
-	rm -rf ${ROOT_DIR}/build
+build: set_env clean
 	docker build --network host --tag $(shell echo ${TAG} | tr A-Z a-z) --build-arg PROJECT=${PROJECT} .
 	docker cp $$(docker create --rm $(shell echo ${TAG} | tr A-Z a-z)):/tmp/${PROJECT}/build .
 
